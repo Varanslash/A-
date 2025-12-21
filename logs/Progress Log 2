@@ -1,0 +1,42 @@
+So I got functions to work correctly.
+
+I had discovered that the fn and end fn instructions allowed fallthrough into their block even when uncalled, so I had to change the general execution model and make sure to change i instead of j. I found that relying on j for jumping was not a good idea as it's not processed immediately, so i for any kind of independent jump was best. Surprise surprise, it works great!
+
+Here's the working part of the code:
+            case ["fn", name]:
+                if RoutInterrupt == False:
+                    i = end[name] + 1
+                else:
+                    i += 1
+            case ["end", "fn", name]:
+                if RoutInterrupt == False:
+                    i = j
+                    JumpInterrupt = True
+                else:
+                    if sram["currentfn"] == name:
+                        j = jstack[-1]
+                        i = j
+                        jstack.pop()
+                        sram["currentfn"] = fnstack[-1]
+                        fnstack.pop()
+                        RoutInterrupt = False
+                        JumpInterrupt = True
+                    else:
+                        i += 1
+            case ["call", "fn", name]:
+                j = i + 1
+                i = start[name] + 1
+                sram["currentfn"] = name
+                fnstack.append(name)
+                jstack.append(j)
+                RoutInterrupt = True
+            case ["jmp", idx]:
+                i = int(idx)
+            case ["return"]:
+                i = len(program)
+
+Currently, equations are evaluated via opcodes and not expressions, and loops are not added yet. I could make things more dynamic by switching to Python Syntax Mapping for things like if statements and equations, or stay instruction and flag based and be low level. Either way, it'll be kinda hard, but really fun!
+
+I'm gonna go push this log and update to DIP to Kaleidoscope now.
+
+Goodbye everyone!
