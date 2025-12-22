@@ -1,0 +1,43 @@
+Loops! They're here!
+
+I got loops working in 1.5. and just saying, I felt pretty smart while doing it.
+
+I already had a frame system going, where all of my progress concerning functions was stored for later to allow for nesting, I did the same with loops, only to run into a problem. The current progress logically didn't save, and it would start its count over once it was exited back in. This was not good, as it led to all likds of infinite recursion when I did it in my head. So, I decided to make it so it would try to pop and write (driveby write) on every loop call, and made it so the new value was pushed after the driveby was done, to ensure current progress was maintained while initializing the inner loops. It worked pretty nicely!
+
+This is the code for the looping instructions:
+            case ["loop", name, flag, value]:
+                if flags[flag] == True:
+                    try:
+                        lvalstack.pop(-1)
+                        lvalstack.append(loopvalue)
+                    except Exception:
+                        pass
+                    loopvalue = int(value)
+                    lvalstack.append(loopvalue)
+                    i += 1
+                else:
+                    i = lend[name] + 1
+            case ["end", "loop", flag, name]:
+                if flags[flag] == False or loopvalue <= 0:
+                    lvalstack.pop(-1)
+                    try:
+                        loopvalue = lvalstack[-1]
+                    except IndexError:
+                        pass
+                    i += 1
+                else:
+                    loopvalue -= 1
+                    i = lstart[name] + 1
+
+Here's an example program:
+reg flag z
+set flag z True
+loop three z 10
+    prt wow
+    loop four z 5
+        prt four
+    end loop z four
+    prt end
+end loop z three
+
+Try it out, and goodnight everyone! It's literally midnight where I am, lol.
